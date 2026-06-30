@@ -104,17 +104,42 @@ app.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
-// Create a new property (with image upload)
+
+
+// Update the NewProperty route in index.js to handle amenities
+
 app.post("/NewProperty", upload.array("images", 5), async (req, res) => {
-  const { name, type, price, location, discount, description, email } =
-    req.body;
+  const {
+    name,
+    type,
+    price,
+    location,
+    discount,
+    description,
+    email,
+    amenities,
+  } = req.body;
+
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: "At least one image is required." });
   }
+
   if (req.files.length > 5) {
     return res.status(400).json({ error: "Maximum 5 images allowed." });
   }
+
   try {
+    // Parse amenities from JSON string if provided
+    let parsedAmenities = [];
+    if (amenities) {
+      try {
+        parsedAmenities = JSON.parse(amenities);
+      } catch (err) {
+        console.error("Error parsing amenities:", err);
+        return res.status(400).json({ error: "Invalid amenities format" });
+      }
+    }
+
     const newProperty = new Property({
       name,
       type,
@@ -123,11 +148,13 @@ app.post("/NewProperty", upload.array("images", 5), async (req, res) => {
       discount,
       description,
       email,
+      amenities: parsedAmenities,
       images: req.files.map((file) => ({
         data: file.buffer,
         contentType: file.mimetype,
       })),
     });
+
     await newProperty.save();
     res.status(201).json(newProperty);
   } catch (err) {

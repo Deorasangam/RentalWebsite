@@ -12,7 +12,26 @@ function NewProperty() {
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState([]);
+  const [amenities, setAmenities] = useState([]);
   const navigate = useNavigate();
+
+  // Available amenities based on the Property schema
+  const availableAmenities = [
+    "WiFi",
+    "TV",
+    "Air Conditioning",
+    "Heating",
+    "Kitchen",
+    "Washing Machine",
+    "Parking",
+    "Elevator",
+    "Swimming Pool",
+    "Gym",
+    "Security",
+    "Balcony",
+    "Garden",
+    "Furniture",
+  ];
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -22,6 +41,16 @@ function NewProperty() {
       return;
     }
     setImage(files);
+  };
+
+  const handleAmenityChange = (amenity) => {
+    if (amenities.includes(amenity)) {
+      // Remove amenity if already selected
+      setAmenities(amenities.filter((item) => item !== amenity));
+    } else {
+      // Add amenity if not selected
+      setAmenities([...amenities, amenity]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -34,7 +63,9 @@ function NewProperty() {
     formData.append("discount", discount);
     formData.append("description", description);
     formData.append("email", email);
-    //formData.append("image", image);
+
+    // Append amenities as JSON string
+    formData.append("amenities", JSON.stringify(amenities));
 
     image.forEach((image, index) => {
       formData.append("images", image);
@@ -64,6 +95,7 @@ function NewProperty() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Property Name"
+          className="w-full p-3 border rounded-md"
           required
         />
         <label className="block text-sm font-medium text-gray-700">
@@ -101,19 +133,20 @@ function NewProperty() {
           className="w-full p-3 border rounded-md"
           required
         />
-        <label className="block text-sm font-medium text-gray-700"></label>
-        discount
+        <label className="block text-sm font-medium text-gray-700">
+          Discount
+        </label>
         <input
           type="number"
-          name="contactEmail"
+          name="discount"
           placeholder="discount"
           value={discount}
           onChange={(e) => setDiscount(e.target.value)}
           className="w-full p-3 border rounded-md"
-          //required
         />
-        <label className="block text-sm font-medium text-gray-700"></label>
-        Description
+        <label className="block text-sm font-medium text-gray-700">
+          Description
+        </label>
         <textarea
           type="text"
           name="Description"
@@ -123,17 +156,40 @@ function NewProperty() {
           className="w-full p-3 border rounded-md"
           required
         />
-        <label className="block text-sm font-medium text-gray-700"></label>
-        Email
+        <label className="block text-sm font-medium text-gray-700">Email</label>
         <input
           type="email"
           name="email"
-          placeholder=" email"
+          placeholder="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full p-3 border rounded-md"
           required
         />
+
+        {/* Amenities Selection */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Amenities
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {availableAmenities.map((amenity) => (
+              <div key={amenity} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`amenity-${amenity}`}
+                  checked={amenities.includes(amenity)}
+                  onChange={() => handleAmenityChange(amenity)}
+                  className="mr-2"
+                />
+                <label htmlFor={`amenity-${amenity}`} className="text-sm">
+                  {amenity}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             Property Images (Max 5)

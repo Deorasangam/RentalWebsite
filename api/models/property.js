@@ -50,6 +50,7 @@ const propertySchema = new mongoose.Schema(
       type: Number,
       //required: [true, "Area is required"],
     },
+
     amenities: [
       {
         type: String,
@@ -71,6 +72,7 @@ const propertySchema = new mongoose.Schema(
         ],
       },
     ],
+
     images: [
       {
         data: Buffer,
