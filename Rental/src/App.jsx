@@ -16,7 +16,7 @@ import PropTypes from "prop-types";
 import axios from "axios";
 
 // Set default base URL for axios
-axios.defaults.baseURL = "http://127.0.0.1:5000";
+axios.defaults.baseURL = "https://rentalwebsite.onrender.com";
 
 // Create Filter Context
 export const FilterContext = createContext(null);

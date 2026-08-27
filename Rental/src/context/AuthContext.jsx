@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get("http://localhost:5000/profile");
+        const response = await axios.get("https://rentalwebsite.onrender.com/profile");
         setUser(response.data.user);
       } catch (error) {
         console.error("Token verification failed:", error);

@@ -75,7 +75,7 @@ const ImageGallery = ({ propertyId, images = [], onShowFullGallery }) => {
         onClick={() => onShowFullGallery(0)}
       >
         <img
-          src={`http://localhost:5000/images/${propertyId}/0`}
+          src={`https://rentalwebsite.onrender.com/images/${propertyId}/0`}
           alt="Main property view"
           className="w-full h-full object-cover"
         />
@@ -87,7 +87,7 @@ const ImageGallery = ({ propertyId, images = [], onShowFullGallery }) => {
           onClick={() => onShowFullGallery(index)}
         >
           <img
-            src={`http://localhost:5000/images/${propertyId}/${index}`}
+            src={`https://rentalwebsite.onrender.com/images/${propertyId}/${index}`}
             alt={`Property view ${index + 1}`}
             className="w-full h-full object-cover"
           />
@@ -114,7 +114,7 @@ const ImageGallery = ({ propertyId, images = [], onShowFullGallery }) => {
             (_, index) => (
               <div key={index} className="w-full h-full flex-shrink-0">
                 <img
-                  src={`http://localhost:5000/images/${propertyId}/${index}`}
+                  src={`https://rentalwebsite.onrender.com/images/${propertyId}/${index}`}
                   alt={`Property view ${index + 1}`}
                   className="w-full h-full object-cover"
                   onClick={() => onShowFullGallery(index)}
@@ -154,9 +154,8 @@ const ImageGallery = ({ propertyId, images = [], onShowFullGallery }) => {
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  currentIndex === index ? "bg-white w-4" : "bg-white/50"
-                }`}
+                className={`w-2 h-2 rounded-full transition-all ${currentIndex === index ? "bg-white w-4" : "bg-white/50"
+                  }`}
               />
             )
           )}
@@ -224,7 +223,7 @@ const PropertyDetails = () => {
     const fetchPropertyDetails = async () => {
       try {
         const propertyRes = await axios.get(
-          `http://localhost:5000/property/${id}`
+          `https://rentalwebsite.onrender.com/property/${id}`
         );
         setProperty(propertyRes.data.property);
 
@@ -232,7 +231,7 @@ const PropertyDetails = () => {
           try {
             const token = localStorage.getItem("token");
             const favoriteRes = await axios.get(
-              `http://localhost:5000/property/${id}/favorite`,
+              `https://rentalwebsite.onrender.com/property/${id}/favorite`,
               {
                 headers: { Authorization: `Bearer ${token}` },
               }
@@ -266,7 +265,7 @@ const PropertyDetails = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/property/${id}/favorite`,
+        `https://rentalwebsite.onrender.com/property/${id}/favorite`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -295,7 +294,7 @@ const PropertyDetails = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:5000/property/${id}/book`,
+        `https://rentalwebsite.onrender.com/property/${id}/book`,
         bookingData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -369,9 +368,8 @@ const PropertyDetails = () => {
             className="flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-gray-50"
           >
             <Heart
-              className={`w-5 h-5 ${
-                isFavorited ? "fill-red-500 text-red-500" : "text-gray-500"
-              }`}
+              className={`w-5 h-5 ${isFavorited ? "fill-red-500 text-red-500" : "text-gray-500"
+                }`}
             />
             <span>{isFavorited ? "Saved" : "Save"}</span>
           </button>
@@ -409,7 +407,7 @@ const PropertyDetails = () => {
           </button>
           <div className="w-full max-w-4xl px-4">
             <img
-              src={`http://localhost:5000/images/${property._id}/${selectedImage}`}
+              src={`https://rentalwebsite.onrender.com/images/${property._id}/${selectedImage}`}
               alt={`Property view ${selectedImage + 1}`}
               className="w-full h-auto rounded-lg"
             />
@@ -422,11 +420,10 @@ const PropertyDetails = () => {
                     className="w-16 h-16 rounded-lg overflow-hidden"
                   >
                     <img
-                      src={`http://localhost:5000/images/${property._id}/${index}`}
+                      src={`https://rentalwebsite.onrender.com/images/${property._id}/${index}`}
                       alt={`Thumbnail ${index + 1}`}
-                      className={`w-full h-full object-cover ${
-                        selectedImage === index ? "ring-2 ring-purple-600" : ""
-                      }`}
+                      className={`w-full h-full object-cover ${selectedImage === index ? "ring-2 ring-purple-600" : ""
+                        }`}
                     />
                   </button>
                 )
@@ -537,11 +534,10 @@ const PropertyDetails = () => {
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${
-                            i < review.rating
+                          className={`w-4 h-4 ${i < review.rating
                               ? "text-yellow-400 fill-yellow-400"
                               : "text-gray-300"
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -629,11 +625,10 @@ const PropertyDetails = () => {
 
                 <button
                   type="submit"
-                  className={`w-full py-3 rounded-lg text-white transition-colors ${
-                    user
+                  className={`w-full py-3 rounded-lg text-white transition-colors ${user
                       ? "bg-purple-600 hover:bg-purple-700"
                       : "bg-gray-400 cursor-not-allowed"
-                  }`}
+                    }`}
                   disabled={!user}
                 >
                   {user ? "Book Now" : "Login to Book"}

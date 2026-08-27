@@ -14,7 +14,7 @@ function Register() {
   async function registerUser(e) {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/Register", {
+      await axios.post("https://rentalwebsite.onrender.com/Register", {
         name,
         email,
         password,

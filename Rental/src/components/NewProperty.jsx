@@ -72,7 +72,7 @@ function NewProperty() {
     });
 
     try {
-      await axios.post("http://localhost:5000/NewProperty", formData, {
+      await axios.post("https://rentalwebsite.onrender.com/NewProperty", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Property added successfully!");

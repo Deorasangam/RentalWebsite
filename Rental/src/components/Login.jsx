@@ -16,7 +16,7 @@ function Login() {
   async function handleLogin(ev) {
     ev.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/login", {
+      const response = await axios.post("https://rentalwebsite.onrender.com/login", {
         email,
         password,
       });

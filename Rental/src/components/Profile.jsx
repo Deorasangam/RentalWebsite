@@ -17,7 +17,7 @@ const Profile = () => {
 
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/profile");
+        const response = await axios.get("https://rentalwebsite.onrender.com/profile");
         setProperties(response.data.properties);
       } catch (error) {
         console.error("Error fetching profile:", error);

@@ -28,7 +28,7 @@ const Main01 = () => {
   const handleStarClick = async (propertyId, rating) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/property/${propertyId}/rate`,
+        `https://rentalwebsite.onrender.com/property/${propertyId}/rate`,
         {
           rating: rating,
           comment: "User rating",
@@ -103,7 +103,7 @@ const Main01 = () => {
 
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/property", {
+        const response = await axios.get("https://rentalwebsite.onrender.com/property", {
           params: {
             location: locationQuery,
             type: typeQuery,
@@ -163,7 +163,7 @@ const Main01 = () => {
                 <Link to={`/property/${property._id}`} className="block">
                   <div className="relative">
                     <img
-                      src={`http://localhost:5000/images/${property._id}/0`}
+                      src={`https://rentalwebsite.onrender.com/images/${property._id}/0`}
                       alt={property.name || "Property Image"}
                       className="w-full h-40 object-cover"
                       onError={(e) => {
