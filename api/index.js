@@ -107,7 +107,7 @@ app.post("/login", async (req, res) => {
 app.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = req.user;
-    const properties = await Property.find({ email: user.email });
+    const properties = await Property.find({ email: user.email }).select("-images.data").lean();
     res.json({
       user: { id: user._id, name: user.name, email: user.email },
       properties,
@@ -179,7 +179,7 @@ app.post("/NewProperty", upload.array("images", 5), async (req, res) => {
 // Serve property images
 app.get("/images/:id/:index", async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id);
+    const property = await Property.findById(req.params.id).select("images");
     const imageIndex = parseInt(req.params.index) || 0;
     if (!property || !property.images || !property.images[imageIndex]) {
       return res.status(404).json({ error: "Image not found" });
@@ -208,7 +208,7 @@ app.get("/property", async (req, res) => {
     if (type && type.trim() !== "") {
       filter.type = { $regex: `^${type.trim()}$`, $options: "i" };
     }
-    const properties = await Property.find(filter);
+    const properties = await Property.find(filter).select("-images.data").lean();
     res.status(200).json(properties);
   } catch (err) {
     console.error("Error fetching properties:", err.message);
@@ -246,7 +246,7 @@ app.post("/property/:id/rate", async (req, res) => {
 // Get details of a single property
 app.get("/property/:id", async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id);
+    const property = await Property.findById(req.params.id).select("-images.data").lean();
     if (!property) {
       return res
         .status(404)
@@ -367,7 +367,7 @@ const adminRouter = express.Router();
 adminRouter.get("/properties", async (req, res) => {
   try {
     // Optionally, add authentication middleware here for admin-only access
-    const properties = await Property.find();
+    const properties = await Property.find().select("-images.data").lean();
     res.status(200).json(properties);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch properties for admin" });
@@ -458,7 +458,8 @@ app.get("/bookings", async (req, res) => {
     const bookings = await Booking.find()
       .populate("user", "name email")
       .populate("property", "name location")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(bookings);
   } catch (error) {
     console.error("Error fetching bookings:", error);
