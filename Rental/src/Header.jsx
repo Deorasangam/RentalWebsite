@@ -1,18 +1,23 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "./context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, X, Plus, User, LogOut, LayoutDashboard, Home } from "lucide-react";
+import { Search, Menu, X, Plus, User, LogOut, LayoutDashboard, Home, MapPin, Building2, Building } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { cn } from "./lib/utils";
+import axios from "axios";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const searchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -20,11 +25,56 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 1) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const response = await axios.get(`/suggestions?q=${encodeURIComponent(searchQuery.trim())}`);
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    };
+
+    const debounce = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSearch = () => {
     if (searchQuery.trim()) {
       navigate(`/search?location=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
+      setShowSuggestions(false);
     }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    if (suggestion.type === "property_type") {
+      navigate(`/search?type=${encodeURIComponent(suggestion.value)}`);
+    } else if (suggestion.type === "location") {
+      navigate(`/search?location=${encodeURIComponent(suggestion.value)}`);
+    } else if (suggestion.type === "property") {
+      navigate(`/property/${suggestion.value}`);
+    }
+    setSearchQuery("");
+    setIsSearchOpen(false);
+    setShowSuggestions(false);
   };
 
   const handleKeyDown = (e) => {
@@ -67,7 +117,7 @@ const Header = () => {
         </Link>
 
         {/* Desktop Search */}
-        <div className="hidden md:flex flex-1 max-w-md">
+        <div className="hidden md:flex flex-1 max-w-md relative" ref={searchRef}>
           <motion.div
             className="flex items-center w-full h-10 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-3 gap-2 focus-within:border-violet-500/60 focus-within:bg-white/8 focus-within:shadow-glow-sm transition-all duration-200"
             whileFocusWithin={{ scale: 1.01 }}
@@ -75,14 +125,18 @@ const Header = () => {
             <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search by location..."
+              placeholder="Search by location, name or type..."
               className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-500 my-0 py-0 px-0 rounded-none"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
               onKeyDown={handleKeyDown}
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="text-slate-500 hover:text-white transition-colors">
+              <button onClick={() => { setSearchQuery(""); setSuggestions([]); }} className="text-slate-500 hover:text-white transition-colors">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
@@ -94,6 +148,38 @@ const Header = () => {
               Search
             </Button>
           </motion.div>
+
+          {/* Desktop Suggestions Dropdown */}
+          <AnimatePresence>
+            {showSuggestions && suggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute top-full left-0 right-0 mt-2 bg-[#0c0920]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 py-2"
+              >
+                {suggestions.map((item, idx) => (
+                  <div
+                    key={`${item.type}-${idx}`}
+                    onClick={() => handleSuggestionClick(item)}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 cursor-pointer transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                      {item.type === "location" && <MapPin className="w-4 h-4 text-violet-400" />}
+                      {item.type === "property_type" && <Building2 className="w-4 h-4 text-indigo-400" />}
+                      {item.type === "property" && <Building className="w-4 h-4 text-pink-400" />}
+                    </div>
+                    <div>
+                      <div className="text-sm text-white font-medium">{item.label}</div>
+                      <div className="text-[10px] text-slate-400 capitalize">
+                        {item.type.replace("_", " ")}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Right Side */}
@@ -219,23 +305,65 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden overflow-hidden border-t border-white/10"
+            className="md:hidden overflow-hidden border-t border-white/10 relative"
+            ref={mobileSearchRef}
           >
             <div className="px-4 py-3 flex items-center gap-2 bg-[#080613]/90 backdrop-blur-xl">
               <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Search by location..."
+                placeholder="Search by location, name or type..."
                 className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-500 my-0 py-0 px-0 rounded-none"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
                 autoFocus
               />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(""); setSuggestions([]); }} className="text-slate-500 hover:text-white transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
               <Button size="sm" onClick={handleSearch} className="btn-gradient h-8 px-3 text-xs rounded-lg">
                 Go
               </Button>
             </div>
+            
+            {/* Mobile Suggestions */}
+            <AnimatePresence>
+              {showSuggestions && suggestions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full left-0 right-0 bg-[#0c0920] border-b border-white/10 z-50 py-2 max-h-64 overflow-y-auto"
+                >
+                  {suggestions.map((item, idx) => (
+                    <div
+                      key={`mob-${item.type}-${idx}`}
+                      onClick={() => handleSuggestionClick(item)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 cursor-pointer transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                        {item.type === "location" && <MapPin className="w-4 h-4 text-violet-400" />}
+                        {item.type === "property_type" && <Building2 className="w-4 h-4 text-indigo-400" />}
+                        {item.type === "property" && <Building className="w-4 h-4 text-pink-400" />}
+                      </div>
+                      <div>
+                        <div className="text-sm text-white font-medium">{item.label}</div>
+                        <div className="text-[10px] text-slate-400 capitalize">
+                          {item.type.replace("_", " ")}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

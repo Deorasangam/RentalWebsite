@@ -216,6 +216,59 @@ app.get("/property", async (req, res) => {
   }
 });
 
+// Get search suggestions
+app.get("/suggestions", async (req, res) => {
+  const { q } = req.query;
+  if (!q || q.trim() === "") return res.json([]);
+  
+  try {
+    const query = q.trim();
+    
+    // Find properties matching location or name
+    const properties = await Property.find({
+      $or: [
+        { location: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } }
+      ]
+    }).select("location name type").limit(10).lean();
+    
+    // Extract unique locations
+    const locations = [...new Set(properties.map(p => p.location))].filter(Boolean).map(loc => ({
+      type: "location",
+      label: loc,
+      value: loc
+    }));
+
+    // Extract unique names
+    const names = properties.map(p => ({
+      type: "property",
+      label: p.name,
+      value: p._id.toString()
+    }));
+
+    // Predefined types
+    const propertyTypes = ["Hostel", "PG", "Room", "Apartment", "Home"];
+    const matchingTypes = propertyTypes
+      .filter(t => t.toLowerCase().includes(query.toLowerCase()))
+      .map(t => ({
+        type: "property_type",
+        label: t,
+        value: t.toLowerCase()
+      }));
+
+    // Combine and limit results
+    const results = [...matchingTypes, ...locations, ...names];
+    
+    // Deduplicate by label just in case
+    const uniqueResults = Array.from(new Map(results.map(item => [item.label, item])).values());
+    
+    res.status(200).json(uniqueResults.slice(0, 10));
+  } catch (err) {
+    console.error("Error fetching suggestions:", err.message);
+    res.status(500).json({ error: "Failed to fetch suggestions" });
+  }
+});
+
 // Rate a property
 app.post("/property/:id/rate", async (req, res) => {
   const { id } = req.params;
