@@ -1,21 +1,34 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useAuth } from "./context/AuthContext"; // Add this import
+import { useState, useEffect } from "react";
+import { useAuth } from "./context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Menu, X, Plus, User, LogOut, LayoutDashboard, Home } from "lucide-react";
+import { Button } from "./components/ui/button";
+import { cn } from "./lib/utils";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // Add this line to use authentication context
+  const { user, logout } = useAuth();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       navigate(`/search?location=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
-    } else {
-      alert("Please enter a valid location.");
     }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSearch();
   };
 
   const handleLogout = () => {
@@ -25,227 +38,208 @@ const Header = () => {
   };
 
   return (
-    <header className="relative p-2 sm:p-4 flex flex-wrap items-center justify-between border rounded-t-md border-gray-500 w-full">
-      {/* Logo */}
-      <Link to="/" className="flex items-center">
-        <span className="font-bold text-2xl bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent hover:from-purple-500 hover:to-blue-400 transition-all">
-          RentEase
-        </span>
-      </Link>
-
-      {/* Search Bar - Desktop */}
-      <div className="hidden md:flex items-center w-[300px] h-[50px] rounded-full p-1 border-2 border-gray-500 hover:border-blue-800 active:border-blue-800 focus:outline-none focus:ring focus:ring-blue-300">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="border-none outline-none p-1 w-full"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <button
-          onClick={handleSearch}
-          className="bg-purple-600 text-white p-2 rounded-full ml-1 border-2 border-gray-300 hover:border-blue-800 active:border-blue-800 focus:outline-none focus:ring focus:ring-blue-300"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="text-white h-5"
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-300",
+        scrolled
+          ? "bg-[#080613]/90 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+          : "bg-transparent"
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        {/* Logo */}
+        <Link to="/" className="flex-shrink-0 group">
+          <motion.div
+            className="flex items-center gap-2"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <path d="M8.25 10.875a2.625 2.625 0 1 1 5.25 0 2.625 2.625 0 0 1-5.25 0Z" />
-            <path
-              fillRule="evenodd"
-              d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.125 4.5a4.125 4.125 0 1 0 2.338 7.524l2.007 2.006a.75.75 0 1 0 1.06-1.06l-2.006-2.007a4.125 4.125 0 0 0-3.399-6.463Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
-      </div>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-glow-sm">
+              <Home className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-extrabold text-xl gradient-text tracking-tight">
+              RentEase
+            </span>
+          </motion.div>
+        </Link>
 
-      {/* Mobile Right Section */}
-      <div className="md:hidden flex items-center gap-2">
-        {/* Search Icon - Mobile */}
-        <button
-          onClick={() => setIsSearchOpen(!isSearchOpen)}
-          className="md:hidden flex items-center border border-gray-300 rounded-full p-2 shadow-md shadow-gray-300 hover:border-blue-800 active:border-blue-800 focus:outline-none focus:ring focus:ring-blue-300 bg-purple-600"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="h-6 w-6 text-white"
+        {/* Desktop Search */}
+        <div className="hidden md:flex flex-1 max-w-md">
+          <motion.div
+            className="flex items-center w-full h-10 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-3 gap-2 focus-within:border-violet-500/60 focus-within:bg-white/8 focus-within:shadow-glow-sm transition-all duration-200"
+            whileFocusWithin={{ scale: 1.01 }}
           >
-            <path
-              fillRule="evenodd"
-              d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="flex items-center border border-gray-300 rounded-full py-2 px-4 gap-2 shadow-md shadow-gray-300"
-        >
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-              />
-            </svg>
-          </div>
-          <div className="bg-gray-500 text-white rounded-full border border-gray-500 overflow-hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="size-6 relative top-1"
-            >
-              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
-            </svg>
-          </div>
-        </button>
-      </div>
-
-      {/* Desktop Buttons */}
-      <div className="hidden md:flex items-center gap-4">
-        {user && ( // Only show Add Property when user is logged in
-          <Link
-            to="/NewProperty"
-            className="bg-purple-600 text-white p-2 rounded-lg w-[150px] text-center"
-          >
-            Add Property
-          </Link>
-        )}
-
-        {/* User Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="flex items-center border border-gray-300 rounded-full py-2 px-4 gap-2 shadow-md shadow-gray-300"
-        >
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-              />
-            </svg>
-          </div>
-          <div className="bg-gray-500 text-white rounded-full border border-gray-500 overflow-hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="size-6 relative top-1"
-            >
-              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
-            </svg>
-          </div>
-        </button>
-      </div>
-
-      {/* Mobile Search Input */}
-      {isSearchOpen && (
-        <div className="w-full md:hidden mt-2 px-2">
-          <div className="flex items-center h-[50px] rounded-full p-1 border-2 border-gray-500">
+            <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search..."
-              className="border-none outline-none p-1 w-full"
+              placeholder="Search by location..."
+              className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-500 my-0 py-0 px-0 rounded-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
-            <button
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="text-slate-500 hover:text-white transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <Button
+              size="sm"
               onClick={handleSearch}
-              className="bg-purple-600 text-white p-2 rounded-full ml-1"
+              className="h-7 px-3 text-xs btn-gradient rounded-lg"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="text-white h-5"
-              >
-                <path d="M8.25 10.875a2.625 2.625 0 1 1 5.25 0 2.625 2.625 0 0 1-5.25 0Z" />
-                <path
-                  fillRule="evenodd"
-                  d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.125 4.5a4.125 4.125 0 1 0 2.338 7.524l2.007 2.006a.75.75 0 1 0 1.06-1.06l-2.006-2.007a4.125 4.125 0 0 0-3.399-6.463Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
+              Search
+            </Button>
+          </motion.div>
         </div>
-      )}
 
-      {/* Dropdown Menu (Mobile & Desktop) */}
-      {isMenuOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <div className="py-2">
-            {user ? (
-              <>
-                <div className="px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
-                  {user.name}
-                </div>
-                <Link
-                  to="/profile"
-                  className="block px-4 py-2 text-gray-800 hover:bg-purple-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  to="/NewProperty"
-                  className="block px-4 py-2 text-gray-800 hover:bg-purple-100 md:hidden"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+        {/* Right Side */}
+        <div className="flex items-center gap-2">
+          {/* Mobile Search Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden rounded-xl border border-white/10"
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+          >
+            <Search className="w-4 h-4" />
+          </Button>
+
+          {/* Add Property */}
+          {user && (
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                asChild
+                className="hidden md:flex btn-gradient h-9 px-4 text-sm"
+              >
+                <Link to="/newproperty">
+                  <Plus className="w-4 h-4" />
                   Add Property
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-purple-100"
+              </Button>
+            </motion.div>
+          )}
+
+          {/* User Menu */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-xl w-10 h-10 relative"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              id="user-menu-trigger"
+            >
+              {isMenuOpen ? (
+                <X className="w-4 h-4" />
+              ) : user ? (
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                  {user.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              ) : (
+                <User className="w-4 h-4" />
+              )}
+            </Button>
+
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 w-56 glass-card p-1.5 z-50"
+                  id="user-menu-dropdown"
                 >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 text-gray-800 hover:bg-purple-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="block px-4 py-2 text-gray-800 hover:bg-purple-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </>
-            )}
+                  {user ? (
+                    <>
+                      <div className="px-3 py-2 mb-1">
+                        <p className="text-xs text-slate-400">Signed in as</p>
+                        <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                      </div>
+                      <div className="h-px bg-white/10 my-1" />
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-white/8 hover:text-white transition-all"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        Profile
+                      </Link>
+                      <Link
+                        to="/newproperty"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-white/8 hover:text-white transition-all md:hidden"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Property
+                      </Link>
+                      <div className="h-px bg-white/10 my-1" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/login"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-white/8 hover:text-white transition-all"
+                      >
+                        <User className="w-4 h-4" />
+                        Login
+                      </Link>
+                      <Link
+                        to="/register"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white bg-violet-600/30 hover:bg-violet-600/50 transition-all mt-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Register
+                      </Link>
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-      )}
-    </header>
+      </div>
+
+      {/* Mobile Search Bar */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden overflow-hidden border-t border-white/10"
+          >
+            <div className="px-4 py-3 flex items-center gap-2 bg-[#080613]/90 backdrop-blur-xl">
+              <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search by location..."
+                className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-500 my-0 py-0 px-0 rounded-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+              />
+              <Button size="sm" onClick={handleSearch} className="btn-gradient h-8 px-3 text-xs rounded-lg">
+                Go
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
 

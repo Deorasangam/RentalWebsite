@@ -63,7 +63,7 @@ const ProtectedRoute = ({ children }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="w-12 h-12 rounded-full border-2 border-violet-500/20 border-t-violet-500 animate-spin" />
       </div>
     );
   }
@@ -133,9 +133,13 @@ function AppContent() {
           <Route
             path="*"
             element={
-              <div className="flex flex-col items-center justify-center min-h-screen">
-                <h1 className="text-4xl font-bold text-gray-800">404</h1>
-                <p className="text-gray-600">Page not found</p>
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <div className="text-8xl font-extrabold gradient-text mb-4">404</div>
+                <h2 className="text-2xl font-bold text-white mb-2">Page Not Found</h2>
+                <p className="text-slate-400 mb-8">The page you're looking for doesn't exist.</p>
+                <a href="/" className="btn-gradient px-6 py-3 rounded-xl font-semibold text-white inline-flex items-center gap-2">
+                  Go Home
+                </a>
               </div>
             }
           />

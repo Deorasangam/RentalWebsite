@@ -27,10 +27,12 @@ const upload = multer({ storage });
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "https://rental-ease-mu.vercel.app",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5176",
+    "https://rental-ease-mu.vercel.app"
+  ],
+  credentials: true
 }));
 const ObjectId = require("mongoose").Types.ObjectId;
 
